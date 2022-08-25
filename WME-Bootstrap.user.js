@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         WME Bootstrap
 // @namespace    https://greasyfork.org/users/227648-anton-shevchuk
-// @version      0.0.1
+// @version      0.0.2
 // @description  Bootstrap library for custom Waze Map Editor scripts
 // @license      MIT License
 // @match        https://www.waze.com/editor*
@@ -21,12 +21,12 @@
 (function ($) {
   'use strict'
 
+  const WMEEvents = 'https://greasyfork.org/scripts/450173-wme-events/code/WME-Events.js'
+  const WMEClass = ''
+
   const APIHelper = 'https://greasyfork.org/scripts/389117-apihelper/code/APIHelper.js'
   const APIHelperUI = 'https://greasyfork.org/scripts/389577-apihelperui/code/APIHelperUI.js'
   const CommonUtils = 'https://greasyfork.org/scripts/389765-common-utils/code/CommonUtils.js'
-
-  const WMEEvents = ''
-  const WMEClass = ''
 
   class Bootstrap {
     log (message) {
@@ -70,6 +70,7 @@
 
     load () {
       return Promise.all([
+        $.getScript(WMEEvents),
         $.getScript(APIHelper),
         $.getScript(APIHelperUI),
         $.getScript(CommonUtils),
