@@ -18,7 +18,7 @@
 
 /* global W */
 
-(async function ($) {
+(function ($) {
   'use strict'
 
   const APIHelper = 'https://greasyfork.org/scripts/389117-apihelper/code/APIHelper.js'
@@ -78,5 +78,5 @@
   }
 
   let WMEBootstrap = new Bootstrap()
-  await WMEBootstrap.init()
+  WMEBootstrap.init()
 })(window.jQuery)
