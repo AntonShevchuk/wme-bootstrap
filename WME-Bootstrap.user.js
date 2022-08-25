@@ -68,7 +68,7 @@
       }
     }
 
-    async load () {
+    load () {
       return Promise.all([
         $.getScript(APIHelper),
         $.getScript(APIHelperUI),
