@@ -77,6 +77,9 @@
     }
   }
 
-  let WMEBootstrap = new Bootstrap()
-  WMEBootstrap.init()
+  try{
+    new Bootstrap().init()
+  } catch (e) {
+    console.error(e)
+  }
 })(window.jQuery)
