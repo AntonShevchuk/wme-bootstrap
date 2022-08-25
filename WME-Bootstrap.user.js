@@ -44,8 +44,8 @@
     }
 
     /**
-     * Check
-     * @param {int} tries
+     * Check loading process
+     * @param {int} max tries
      */
     check (tries = 100) {
       this.log('try to init')
@@ -55,11 +55,11 @@
         W.model.countries.top &&
         W.loginManager.user
       ) {
-        this
-          .load()
-          .then(() => $(document).trigger('bootstrap.wme'))
-          .then(() => this.log('was initialized'))
-          .catch((e) => this.log('loading failed', e))
+          this
+            .load()
+            .then(() => $(document).trigger('bootstrap.wme'))
+            .then(() => this.log('was initialized'))
+            .catch((e) => this.log('loading failed', e))
       } else if (tries > 0) {
         tries--
         setTimeout(() => this.check(tries), 500)
@@ -77,9 +77,6 @@
     }
   }
 
-  try{
-    new Bootstrap().init()
-  } catch (e) {
-    console.error(e)
-  }
-})(window.jQuery)
+  new Bootstrap().init()
+
+})(window.jQuery);
