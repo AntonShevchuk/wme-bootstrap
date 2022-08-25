@@ -3,7 +3,7 @@ Bootstrap library for custom WME scripts
 
 ## Require Script
 ```javascript
-// @require https://greasyfork.org/scripts/ TBD
+// @require https://greasyfork.org/scripts/450160-wme-bootstrap/code/WME-Bootstrap.js
 ```
 
 ## Usage
@@ -21,4 +21,4 @@ Bootstrap library for custom WME scripts
 ## Links
 Author homepage: http://anton.shevchuk.name/  
 Script homepage: https://github.com/AntonShevchuk/wme-bootstrap  
-GreasyFork: https://greasyfork.org/scripts/ TBD
+GreasyFork: https://greasyfork.org/scripts/450160-wme-bootstrap/code/WME-Bootstrap.js

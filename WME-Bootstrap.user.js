@@ -18,7 +18,7 @@
 
 /* global W */
 
-(function ($) {
+(async function ($) {
   'use strict'
 
   const APIHelper = 'https://greasyfork.org/scripts/389117-apihelper/code/APIHelper.js'
@@ -47,8 +47,8 @@
      * Check
      * @param {int} tries
      */
-    check (tries = 1) {
-      this.log('attempt ' + tries)
+    check (tries = 100) {
+      this.log('try to init')
       if (W &&
         W.map &&
         W.model &&
@@ -59,16 +59,16 @@
           .load()
           .then(() => $(document).trigger('bootstrap.wme'))
           .then(() => this.log('was initialized'))
-          .catch(() => this.log('loading failed'))
-      } else if (tries < 100) {
-        tries++
+          .catch((e) => this.log('loading failed', e))
+      } else if (tries > 0) {
+        tries--
         setTimeout(() => this.check(tries), 500)
       } else {
         this.log('initialization failed')
       }
     }
 
-    async load() {
+    async load () {
       return Promise.all([
         $.getScript(APIHelper),
         $.getScript(APIHelperUI),
@@ -77,5 +77,6 @@
     }
   }
 
-  new Bootstrap().init()
+  let WMEBootstrap = new Bootstrap()
+  await WMEBootstrap.init()
 })(window.jQuery)
