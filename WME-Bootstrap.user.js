@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         WME Bootstrap
 // @namespace    https://greasyfork.org/users/227648-anton-shevchuk
-// @version      0.0.2
+// @version      0.0.4
 // @description  Bootstrap library for custom Waze Map Editor scripts
 // @license      MIT License
 // @match        https://www.waze.com/editor*
@@ -18,11 +18,11 @@
 
 /* global W */
 
-(function ($) {
+(function () {
   'use strict'
 
   const WMEEvents = 'https://greasyfork.org/scripts/450173-wme-events/code/WME-Events.js'
-  const WMEClass = ''
+  const WMEBase = 'https://greasyfork.org/scripts/450221-wme-base/code/WME-Base.js'
 
   const APIHelper = 'https://greasyfork.org/scripts/389117-apihelper/code/APIHelper.js'
   const APIHelperUI = 'https://greasyfork.org/scripts/389577-apihelperui/code/APIHelperUI.js'
@@ -57,9 +57,9 @@
       ) {
           this
             .load()
-            .then(() => $(document).trigger('bootstrap.wme'))
+            .then(() => jQuery(document).trigger('bootstrap.wme'))
             .then(() => this.log('was initialized'))
-            .catch((e) => this.log('loading failed', e))
+            .catch(e => console.error(e))
       } else if (tries > 0) {
         tries--
         setTimeout(() => this.check(tries), 500)
@@ -70,14 +70,15 @@
 
     load () {
       return Promise.all([
-        $.getScript(WMEEvents),
-        $.getScript(APIHelper),
-        $.getScript(APIHelperUI),
-        $.getScript(CommonUtils),
+        jQuery.getScript(WMEEvents),
+        jQuery.getScript(WMEBase),
+        jQuery.getScript(APIHelper),
+        jQuery.getScript(APIHelperUI),
+        jQuery.getScript(CommonUtils),
       ])
     }
   }
 
   new Bootstrap().init()
 
-})(window.jQuery);
+})();
