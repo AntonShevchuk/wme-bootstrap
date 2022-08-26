@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         WME Bootstrap
 // @namespace    https://greasyfork.org/users/227648-anton-shevchuk
-// @version      0.0.4
+// @version      0.0.6
 // @description  Bootstrap library for custom Waze Map Editor scripts
 // @license      MIT License
 // @match        https://www.waze.com/editor*
@@ -37,8 +37,11 @@
      * Bootstrap it once!
      */
     init () {
-      if (!window.WMEBootstrap) {
-        window.WMEBootstrap = true
+      const sandbox = typeof unsafeWindow !== 'undefined';
+      const pageWindow = sandbox ? unsafeWindow : window;
+
+      if (!pageWindow.WMEBootstrap) {
+        pageWindow.WMEBootstrap = true
         this.check()
       }
     }
@@ -71,7 +74,6 @@
     load () {
       return Promise.all([
         jQuery.getScript(WMEEvents),
-        jQuery.getScript(WMEBase),
         jQuery.getScript(APIHelper),
         jQuery.getScript(APIHelperUI),
         jQuery.getScript(CommonUtils),
