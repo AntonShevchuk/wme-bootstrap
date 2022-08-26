@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         WME Bootstrap
 // @namespace    https://greasyfork.org/users/227648-anton-shevchuk
-// @version      0.0.6
+// @version      0.0.7
 // @description  Bootstrap library for custom Waze Map Editor scripts
 // @license      MIT License
 // @match        https://www.waze.com/editor*
@@ -14,31 +14,20 @@
 // @grant        none
 // ==/UserScript==
 
-/* jshint esversion: 6 */
+/* jshint esversion: 8 */
 
-/* global W */
+/* global jQuery, W */
 
 (function () {
   'use strict'
 
-  const WMEEvents = 'https://greasyfork.org/scripts/450173-wme-events/code/WME-Events.js'
-  const WMEBase = 'https://greasyfork.org/scripts/450221-wme-base/code/WME-Base.js'
-
-  const APIHelper = 'https://greasyfork.org/scripts/389117-apihelper/code/APIHelper.js'
-  const APIHelperUI = 'https://greasyfork.org/scripts/389577-apihelperui/code/APIHelperUI.js'
-  const CommonUtils = 'https://greasyfork.org/scripts/389765-common-utils/code/CommonUtils.js'
-
   class Bootstrap {
-    log (message) {
-      console.log('%cBootstrap:%c ' + message, 'color: #0DAD8D; font-weight: bold', 'color: dimgray; font-weight: normal')
-    }
-
     /**
      * Bootstrap it once!
      */
-    init () {
-      const sandbox = typeof unsafeWindow !== 'undefined';
-      const pageWindow = sandbox ? unsafeWindow : window;
+    constructor () {
+      const sandbox = typeof unsafeWindow !== 'undefined'
+      const pageWindow = sandbox ? unsafeWindow : window
 
       if (!pageWindow.WMEBootstrap) {
         pageWindow.WMEBootstrap = true
@@ -48,21 +37,18 @@
 
     /**
      * Check loading process
-     * @param {int} max tries
+     * @param tries
      */
     check (tries = 100) {
-      this.log('try to init')
+      this.log('try to initialize')
       if (W &&
         W.map &&
         W.model &&
         W.model.countries.top &&
         W.loginManager.user
       ) {
-          this
-            .load()
-            .then(() => jQuery(document).trigger('bootstrap.wme'))
-            .then(() => this.log('was initialized'))
-            .catch(e => console.error(e))
+        this.init()
+        this.log('was initialized')
       } else if (tries > 0) {
         tries--
         setTimeout(() => this.check(tries), 500)
@@ -71,16 +57,104 @@
       }
     }
 
-    load () {
-      return Promise.all([
-        jQuery.getScript(WMEEvents),
-        jQuery.getScript(APIHelper),
-        jQuery.getScript(APIHelperUI),
-        jQuery.getScript(CommonUtils),
-      ])
+    /**
+     * Initial events and handlers
+     */
+    init () {
+      try {
+        // setup additional handlers
+        this.setup()
+        // fire `bootstrap.wme` event
+        jQuery(document)
+          .trigger('bootstrap.wme')
+        // listen all events
+        jQuery(document)
+          .on('segment.wme', this.log)
+          .on('segments.wme', this.log)
+          .on('node.wme', this.log)
+          .on('nodes.wme', this.log)
+          .on('venue.wme', this.log)
+          .on('venues.wme', this.log)
+          .on('point.wme', this.log)
+          .on('place.wme', this.log)
+          .on('residential.wme', this.log)
+      } catch (e) {
+        console.error(e)
+      }
+    }
+
+    /**
+     * Setup additional handler for `selectionchanged` event
+     */
+    setup () {
+      W.selectionManager.events.register('selectionchanged', null, (event) => this.handler(event.selected))
+
+      this.handler(W.selectionManager.getSelectedFeatures())
+    }
+
+    /**
+     * Proxy-handler
+     * @param {Array} selected
+     */
+    handler (selected) {
+      if (selected.length === 0) {
+        jQuery(document).trigger('none.wme')
+        return
+      }
+
+      let isSingle = (selected.length === 1)
+      let models = selected.map(x => x.model)
+      let model = models[0]
+
+      switch (true) {
+        case (model.type === 'node' && isSingle):
+          this.trigger('node.wme', 'node-edit-general', model)
+          break
+        case (model.type === 'node'):
+          this.trigger('nodes.wme', 'node-edit-general', models)
+          break
+        case (model.type === 'segment' && isSingle):
+          this.trigger('segment.wme', 'segment-edit-general', model)
+          break
+        case (model.type === 'segment'):
+          this.trigger('segments.wme', 'segment-edit-general', models)
+          break
+        case (model.type === 'venue' && isSingle):
+          this.trigger('venue.wme', 'venue-edit-general', model)
+          if (model.isPoint()) {
+            this.trigger('point.wme', 'venue-edit-general', model)
+          } else {
+            this.trigger('place.wme', 'venue-edit-general', model)
+          }
+          if (model.isResidential()) {
+            this.trigger('residential.wme', 'venue-edit-general', model)
+          }
+          break
+        case (model.type === 'venue'):
+          this.trigger('venues.wme', 'mergeVenuesCollection', models)
+          break
+      }
+    }
+
+    /**
+     * Fire new event with context
+     * @param {String} event
+     * @param {String} selector
+     * @param {Object|Array} models
+     */
+    trigger (event, selector, models) {
+      jQuery(document).trigger(event, [document.getElementById(selector), models])
+    }
+
+    /**
+     * Just logger
+     * @param {String} message
+     */
+    log (message) {
+      console.log('%cBootstrap:%c ' + message, 'color: #0DAD8D; font-weight: bold', 'color: dimgray; font-weight: normal')
     }
   }
 
-  new Bootstrap().init()
+  new Bootstrap()
 
-})();
+})()
