@@ -73,11 +73,11 @@
           .on('segments.wme', () => this.log('🛣️️ segments.wme'))
           .on('node.wme', () => this.log('⭐️ node.wme'))
           .on('nodes.wme', () => this.log('⭐️ nodes.wme'))
-          .on('venue.wme', () => this.log('🏢️ venue.wme'))
-          .on('venues.wme', () => this.log('🏢️ venues.wme'))
-          .on('point.wme', () => this.log('📍️ point.wme'))
-          .on('place.wme', () => this.log('📍️ place.wme'))
-          .on('residential.wme', () => this.log('🏠 residential.wme'))
+          .on('venue.wme', () => this.log('📍️ venue.wme'))
+          .on('venues.wme', () => this.log('🏬️ venues.wme'))
+          .on('point.wme', () => this.log('️🏠 point.wme'))
+          .on('place.wme', () => this.log('🏢️️ place.wme'))
+          .on('residential.wme', () => this.log('🪧 residential.wme'))
       } catch (e) {
         console.error(e)
       }
@@ -121,13 +121,12 @@
           break
         case (model.type === 'venue' && isSingle):
           this.trigger('venue.wme', 'venue-edit-general', model)
-          if (model.isPoint()) {
+          if (model.isResidential()) {
+            this.trigger('residential.wme', 'venue-edit-general', model)
+          } else if (model.isPoint()) {
             this.trigger('point.wme', 'venue-edit-general', model)
           } else {
             this.trigger('place.wme', 'venue-edit-general', model)
-          }
-          if (model.isResidential()) {
-            this.trigger('residential.wme', 'venue-edit-general', model)
           }
           break
         case (model.type === 'venue'):
