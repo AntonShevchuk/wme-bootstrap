@@ -12,7 +12,7 @@ Bootstrap library for custom WME scripts
 * `bootstrap.wme` – on `document`, when all ready for usage
 * `none.wme` – on `document`, when nothing chosen
 * `node.wme` – on `document`, when chosen node for edit
-* `nodes.wme` – on `document`, when chosen more than one node
+* `nodes.wme` – on `document`, when chosen more than one node (I'm not sure how it possible)
 * `segment.wme` – on `document`, when chosen segment for edit
 * `segments.wme` – on `document`, when chosen more than one segment
 * `venue.wme` – on `document`, when chosen place or point for edit
