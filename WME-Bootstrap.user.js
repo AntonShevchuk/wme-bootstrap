@@ -1,9 +1,11 @@
 // ==UserScript==
 // @name         WME Bootstrap
-// @namespace    https://greasyfork.org/users/227648-anton-shevchuk
 // @version      0.0.7
 // @description  Bootstrap library for custom Waze Map Editor scripts
 // @license      MIT License
+// @author       Anton Shevchuk
+// @namespace    https://greasyfork.org/users/227648-anton-shevchuk
+// @supportURL   https://github.com/AntonShevchuk/wme-bootstrap/issues
 // @match        https://www.waze.com/editor*
 // @match        https://www.waze.com/*/editor*
 // @match        https://beta.waze.com/editor*
@@ -12,8 +14,6 @@
 // @exclude      https://beta.waze.com/user/editor*
 // @icon         https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://anton.shevchuk.name&size=64
 // @grant        none
-// @supportURL   https://github.com/AntonShevchuk/wme-bootstrap/issues
-// @contributionURL https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=antonshevchuk@gmail.com&item_name=Greasy+Fork+donation
 // ==/UserScript==
 
 /* jshint esversion: 8 */
