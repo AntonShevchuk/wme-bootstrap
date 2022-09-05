@@ -139,6 +139,10 @@
 
     /**
      * Fire new event with context
+     * It can be #node-edit-general
+     *  or #segment-edit-general
+     *  or #venue-edit-general
+     *  or #mergeVenuesCollection
      * @param {String} event
      * @param {String} selector
      * @param {Object|Array} models

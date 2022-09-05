@@ -21,6 +21,13 @@ Bootstrap library for custom WME scripts
 * `place.wme` – on `document`, when chosen place for edit
 * `residential.wme` – on `document`, when chosen residential place for edit
 
+## Arguments
+
+* `event` – [`jQuery.Event`](https://api.jquery.com/category/events/event-object/)
+* `element` – [`HTMLElement`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement) of the sidebar panel 
+* `model` – `W.model`
+* `models` - array of `W.model`
+
 ## Usage
 
 ```javascript
@@ -29,37 +36,37 @@ Bootstrap library for custom WME scripts
 
   $(document)
     .on('bootstrap.wme', function () {
-      console.info('@ready')
+      console.info('ready')
     })
-    .on('none.wme', (e, el) => {
-      console.info('@none', el)
+    .on('none.wme', (e) => {
+      console.info('none')
     })
-    .on('node.wme', (e, el) => {
-      console.info('@node', el)
+    .on('node.wme', (event, element, model) => {
+      console.info('node', model)
     })
-    .on('nodes.wme', (e, el) => {
-      console.info('@nodes', el)
+    .on('nodes.wme', (event, element, models) => {
+      console.info('nodes', models)
     })
-    .on('segment.wme', (e, el) => {
-      console.info('@segment', el)
+    .on('segment.wme', (event, element, model) => {
+      console.info('segment', model)
     })
-    .on('segments.wme', (e, el) => {
-      console.info('@segments', el)
+    .on('segments.wme', (event, element, models) => {
+      console.info('segments', models)
     })
-    .on('venue.wme', (e, el) => {
-      console.info('@venue', el)
+    .on('venue.wme', (event, element, model) => {
+      console.info('venue', model)
     })
-    .on('venues.wme', (e, el) => {
-      console.info('@venues', el)
+    .on('venues.wme', (event, element, model) => {
+      console.info('venues', models)
     })
-    .on('point.wme', (e, el) => {
-      console.info('@point', el)
+    .on('point.wme', (event, element, model) => {
+      console.info('point', model)
     })
-    .on('place.wme', (e, el) => {
-      console.info('@place', el)
+    .on('place.wme', (event, element, model) => {
+      console.info('place', model)
     })
-    .on('residential.wme', (e, el) => {
-      console.info('@residential', el)
+    .on('residential.wme', (event, element, model) => {
+      console.info('residential', model)
     })
 })();
 ```
