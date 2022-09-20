@@ -1,5 +1,30 @@
 # WME Bootstrap
-Bootstrap library for custom WME scripts
+This is a small Boostrap library for checking WME loading and providing useful events, which you can use for your scripts.
+
+**For what?**
+
+You can meet the realization of checking loading in the many scripts; it looks like this:
+
+```javascript
+// 👎
+function init() {
+  /* checking */
+  setTimeout(init, 200) 
+}
+```
+
+No need more this way; look at the following code:
+
+```javascript
+// 👍
+$(document).on('bootstrap.wme', () => { /* your code here */ } )
+```
+
+So I think it's clear.
+
+**Need more?**
+
+So, it is not all. This script trigger [more events](#events) for common events in the WME where you can manipulate the [arguments](#arguments).
 
 ## Require Script
 
@@ -9,24 +34,26 @@ Bootstrap library for custom WME scripts
 
 ## Events
 
-* `bootstrap.wme` – on `document`, when all ready for usage
-* `none.wme` – on `document`, when nothing chosen
-* `node.wme` – on `document`, when chosen node for edit
-* `nodes.wme` – on `document`, when chosen more than one node (I'm not sure how it possible)
-* `segment.wme` – on `document`, when chosen segment for edit
-* `segments.wme` – on `document`, when chosen more than one segment
-* `venue.wme` – on `document`, when chosen place or point for edit
-* `venues.wme` – on `document`, when chosen more than one place or point
-* `point.wme` – on `document`, when chosen point place for edit
-* `place.wme` – on `document`, when chosen place for edit
-* `residential.wme` – on `document`, when chosen residential place for edit
+All following events are triggered on the `document`
+
+* `bootstrap.wme` – when all WME-objects are ready for usage
+* `none.wme` – when nothing chosen
+* `node.wme` – when chosen node for edit
+* `nodes.wme` – when chosen more than one node (I'm not sure how it is possible)
+* `segment.wme` – when chosen segment for edit
+* `segments.wme` – when chosen more than one segment
+* `venue.wme` – when chosen place or point for edit
+* `venues.wme` – when chosen more than one place or point
+* `point.wme` – when chosen point place for edit
+* `place.wme` – when chosen place for edit
+* `residential.wme` – when chosen residential place for edit
 
 ## Arguments
 
 * `event` – [`jQuery.Event`](https://api.jquery.com/category/events/event-object/)
 * `element` – [`HTMLElement`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement) of the sidebar panel 
 * `model` – `W.model`
-* `models` - array of `W.model`
+* `models` – array of `W.model`
 
 ## Usage
 
@@ -43,12 +70,14 @@ Bootstrap library for custom WME scripts
     })
     .on('node.wme', (event, element, model) => {
       console.info('node', model)
+      console.info('sidebar', element)
     })
     .on('nodes.wme', (event, element, models) => {
       console.info('nodes', models)
     })
     .on('segment.wme', (event, element, model) => {
       console.info('segment', model)
+      console.info('sidebar', element)
     })
     .on('segments.wme', (event, element, models) => {
       console.info('segments', models)
