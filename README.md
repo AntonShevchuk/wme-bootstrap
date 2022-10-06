@@ -104,4 +104,4 @@ All following events are triggered on the `document`
 
 Author homepage: http://anton.shevchuk.name/  
 Script homepage: https://github.com/AntonShevchuk/wme-bootstrap  
-GreasyFork: https://greasyfork.org/scripts/450160-wme-bootstrap/code/WME-Bootstrap.js
+GreasyFork: https://greasyfork.org/en/scripts/450160-wme-bootstrap
