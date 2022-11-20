@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         WME Bootstrap
-// @version      0.0.7
+// @version      0.0.8
 // @description  Bootstrap library for custom Waze Map Editor scripts
 // @license      MIT License
 // @author       Anton Shevchuk
@@ -145,7 +145,32 @@
      * @param {Object|Array} models
      */
     trigger (event, selector, models) {
-      jQuery(document).trigger(event, [document.getElementById(selector), models])
+      this.waitElementById(selector).then(element => jQuery(document).trigger(event, [element, models]))
+    }
+
+    /**
+     * Wait for DOM Element
+     * @param selector
+     * @return {Promise<HTMLElement>}
+     */
+    waitElementById (selector) {
+      return new Promise(resolve => {
+        if (document.getElementById(selector)) {
+          return resolve(document.getElementById(selector))
+        }
+
+        const observer = new MutationObserver(mutations => {
+          if (document.getElementById(selector)) {
+            resolve(document.getElementById(selector))
+            observer.disconnect()
+          }
+        })
+
+        observer.observe(document.getElementById('edit-panel'), {
+          childList: true,
+          subtree: true
+        })
+      })
     }
 
     /**
