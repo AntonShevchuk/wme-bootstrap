@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         WME Bootstrap
-// @version      0.0.9
+// @version      0.0.10
 // @description  Bootstrap library for custom Waze Map Editor scripts
 // @license      MIT License
 // @author       Anton Shevchuk
@@ -116,7 +116,7 @@
           this.triggerById('segment.wme', 'segment-edit-general', model)
           break
         case (model.type === 'segment'):
-          this.triggerByQuery('segments.wme', '#segment-edit-general', '#segment-edit-general .feature-ids-details', model)
+          this.triggerByQuery('segments.wme', '#segment-edit-general', '#segment-edit-general .feature-ids-details', models)
           break
         case (model.type === 'venue' && isSingle):
           this.triggerById('venue.wme', 'venue-edit-general', model)
