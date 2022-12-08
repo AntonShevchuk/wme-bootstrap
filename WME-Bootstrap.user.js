@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         WME Bootstrap
-// @version      0.0.8
+// @version      0.0.9
 // @description  Bootstrap library for custom Waze Map Editor scripts
 // @license      MIT License
 // @author       Anton Shevchuk
@@ -107,29 +107,29 @@
 
       switch (true) {
         case (model.type === 'node' && isSingle):
-          this.trigger('node.wme', 'node-edit-general', model)
+          this.triggerById('node.wme', 'node-edit-general', model)
           break
         case (model.type === 'node'):
-          this.trigger('nodes.wme', 'node-edit-general', models)
+          this.triggerById('nodes.wme', 'node-edit-general', models)
           break
         case (model.type === 'segment' && isSingle):
-          this.trigger('segment.wme', 'segment-edit-general', model)
+          this.triggerById('segment.wme', 'segment-edit-general', model)
           break
         case (model.type === 'segment'):
-          this.trigger('segments.wme', 'segment-edit-general', models)
+          this.triggerByQuery('segments.wme', '#segment-edit-general', '#segment-edit-general .feature-ids-details', model)
           break
         case (model.type === 'venue' && isSingle):
-          this.trigger('venue.wme', 'venue-edit-general', model)
+          this.triggerById('venue.wme', 'venue-edit-general', model)
           if (model.isResidential()) {
-            this.trigger('residential.wme', 'venue-edit-general', model)
+            this.triggerById('residential.wme', 'venue-edit-general', model)
           } else if (model.isPoint()) {
-            this.trigger('point.wme', 'venue-edit-general', model)
+            this.triggerById('point.wme', 'venue-edit-general', model)
           } else {
-            this.trigger('place.wme', 'venue-edit-general', model)
+            this.triggerById('place.wme', 'venue-edit-general', model)
           }
           break
         case (model.type === 'venue'):
-          this.trigger('venues.wme', 'mergeVenuesCollection', models)
+          this.triggerById('venues.wme', 'mergeVenuesCollection', models)
           break
       }
     }
@@ -144,8 +144,27 @@
      * @param {String} selector
      * @param {Object|Array} models
      */
-    trigger (event, selector, models) {
-      this.waitElementById(selector).then(element => jQuery(document).trigger(event, [element, models]))
+    triggerById (event, selector, models) {
+      this
+        .waitElementById(selector)
+        .then(element => jQuery(document).trigger(event, [element, models]))
+    }
+
+    /**
+     * Fire new event with context
+     * It can be #node-edit-general
+     *  or #segment-edit-general
+     *  or #venue-edit-general
+     *  or #mergeVenuesCollection
+     * @param {String} event
+     * @param {String} element
+     * @param {String} selector
+     * @param {Object|Array} models
+     */
+    triggerByQuery (event, element, selector, models) {
+      this
+        .waitElementByQuery(element, selector)
+        .then(element => jQuery(document).trigger(event, [element, models]))
     }
 
     /**
@@ -154,14 +173,25 @@
      * @return {Promise<HTMLElement>}
      */
     waitElementById (selector) {
+      selector = '#' + selector
+      return this.waitElementByQuery(selector, selector)
+    }
+
+    /**
+     * Wait for DOM Element
+     * @param element
+     * @param selector
+     * @return {Promise<HTMLElement>}
+     */
+    waitElementByQuery (element, selector) {
       return new Promise(resolve => {
-        if (document.getElementById(selector)) {
-          return resolve(document.getElementById(selector))
+        if (document.querySelector(selector)) {
+          return resolve(document.querySelector(element))
         }
 
         const observer = new MutationObserver(mutations => {
-          if (document.getElementById(selector)) {
-            resolve(document.getElementById(selector))
+          if (document.querySelector(selector)) {
+            resolve(document.querySelector(element))
             observer.disconnect()
           }
         })
