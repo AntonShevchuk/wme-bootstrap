@@ -107,29 +107,31 @@
 
       switch (true) {
         case (model.type === 'node' && isSingle):
-          this.triggerById('node.wme', 'node-edit-general', model)
+          this.trigger('node.wme', 'node-edit-general', model)
           break
         case (model.type === 'node'):
-          this.triggerById('nodes.wme', 'node-edit-general', models)
+          this.trigger('nodes.wme', 'node-edit-general', models)
           break
         case (model.type === 'segment' && isSingle):
-          this.triggerById('segment.wme', 'segment-edit-general', model)
+          this.trigger('segment.wme', 'segment-edit-general', model)
           break
         case (model.type === 'segment'):
-          this.triggerByQuery('segments.wme', '#segment-edit-general', '#segment-edit-general .feature-ids-details', models)
+          this
+            .waitSegmentsCounter(models.length)
+            .then(element => jQuery(document).trigger('segments.wme', [element, models]))
           break
         case (model.type === 'venue' && isSingle):
-          this.triggerById('venue.wme', 'venue-edit-general', model)
+          this.trigger('venue.wme', 'venue-edit-general', model)
           if (model.isResidential()) {
-            this.triggerById('residential.wme', 'venue-edit-general', model)
+            this.trigger('residential.wme', 'venue-edit-general', model)
           } else if (model.isPoint()) {
-            this.triggerById('point.wme', 'venue-edit-general', model)
+            this.trigger('point.wme', 'venue-edit-general', model)
           } else {
-            this.triggerById('place.wme', 'venue-edit-general', model)
+            this.trigger('place.wme', 'venue-edit-general', model)
           }
           break
         case (model.type === 'venue'):
-          this.triggerById('venues.wme', 'mergeVenuesCollection', models)
+          this.trigger('venues.wme', 'mergeVenuesCollection', models)
           break
       }
     }
@@ -144,54 +146,51 @@
      * @param {String} selector
      * @param {Object|Array} models
      */
-    triggerById (event, selector, models) {
+    trigger (event, selector, models) {
       this
         .waitElementById(selector)
         .then(element => jQuery(document).trigger(event, [element, models]))
     }
 
     /**
-     * Fire new event with context
-     * It can be #node-edit-general
-     *  or #segment-edit-general
-     *  or #venue-edit-general
-     *  or #mergeVenuesCollection
-     * @param {String} event
-     * @param {String} element
-     * @param {String} selector
-     * @param {Object|Array} models
-     */
-    triggerByQuery (event, element, selector, models) {
-      this
-        .waitElementByQuery(element, selector)
-        .then(element => jQuery(document).trigger(event, [element, models]))
-    }
-
-    /**
      * Wait for DOM Element
-     * @param selector
+     * @param element
      * @return {Promise<HTMLElement>}
      */
-    waitElementById (selector) {
-      selector = '#' + selector
-      return this.waitElementByQuery(selector, selector)
+    waitElementById (element) {
+      return new Promise(resolve => {
+        if (document.getElementById(element)) {
+          return resolve(document.getElementById(element))
+        }
+
+        const observer = new MutationObserver(mutations => {
+          if (document.getElementById(element)) {
+            resolve(document.getElementById(element))
+            observer.disconnect()
+          }
+        })
+
+        observer.observe(document.getElementById('edit-panel'), {
+          childList: true,
+          subtree: true
+        })
+      })
     }
 
     /**
      * Wait for DOM Element
      * @param element
-     * @param selector
      * @return {Promise<HTMLElement>}
      */
-    waitElementByQuery (element, selector) {
+    waitSegmentsCounter (counter) {
       return new Promise(resolve => {
-        if (document.querySelector(selector)) {
-          return resolve(document.querySelector(element))
+        if (document.querySelector('.feature-id-container > wz-overline').innerText.startsWith(counter)) {
+          return resolve(document.getElementById('segment-edit-general'))
         }
 
         const observer = new MutationObserver(mutations => {
-          if (document.querySelector(selector)) {
-            resolve(document.querySelector(element))
+          if (document.querySelector('.feature-id-container > wz-overline').innerText.startsWith(counter)) {
+            resolve(document.getElementById('segment-edit-general'))
             observer.disconnect()
           }
         })
