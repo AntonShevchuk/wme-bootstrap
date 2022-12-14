@@ -24,11 +24,17 @@
      * Bootstrap it once!
      */
     constructor () {
-      document.addEventListener(
-        "wme-logged-in",
-        () => this.init(),
-        { once: true },
-      );
+      const sandbox = typeof unsafeWindow !== 'undefined'
+      const pageWindow = sandbox ? unsafeWindow : window
+
+      if (!pageWindow.WMEBootstrap) {
+        pageWindow.WMEBootstrap = true
+        document.addEventListener(
+          "wme-logged-in",
+          () => this.init(),
+          { once: true },
+        );
+      }
     }
 
     /**
@@ -37,8 +43,7 @@
     init () {
       try {
         // fire `bootstrap.wme` event
-        jQuery(document)
-          .trigger('bootstrap.wme')
+        jQuery(document).trigger('bootstrap.wme')
         // setup additional handlers
         this.setup()
         // listen all events
