@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         WME Bootstrap
-// @version      0.0.10
+// @version      0.1.0
 // @description  Bootstrap library for custom Waze Map Editor scripts
 // @license      MIT License
 // @author       Anton Shevchuk
@@ -14,7 +14,6 @@
 // ==/UserScript==
 
 /* jshint esversion: 8 */
-
 /* global jQuery, W */
 
 (function () {
@@ -25,35 +24,11 @@
      * Bootstrap it once!
      */
     constructor () {
-      const sandbox = typeof unsafeWindow !== 'undefined'
-      const pageWindow = sandbox ? unsafeWindow : window
-
-      if (!pageWindow.WMEBootstrap) {
-        pageWindow.WMEBootstrap = true
-        this.check()
-      }
-    }
-
-    /**
-     * Check loading process
-     * @param tries
-     */
-    check (tries = 100) {
-      this.log('try to initialize')
-      if (W &&
-        W.map &&
-        W.model &&
-        W.model.countries.top &&
-        W.loginManager.user
-      ) {
-        this.init()
-        this.log('was initialized')
-      } else if (tries > 0) {
-        tries--
-        setTimeout(() => this.check(tries), 500)
-      } else {
-        this.log('initialization failed')
-      }
+      document.addEventListener(
+        "wme-logged-in",
+        () => this.init(),
+        { once: true },
+      );
     }
 
     /**
@@ -61,11 +36,11 @@
      */
     init () {
       try {
-        // setup additional handlers
-        this.setup()
         // fire `bootstrap.wme` event
         jQuery(document)
           .trigger('bootstrap.wme')
+        // setup additional handlers
+        this.setup()
         // listen all events
         jQuery(document)
           .on('segment.wme', () => this.log('🛣️ segment.wme'))
@@ -163,7 +138,7 @@
           return resolve(document.getElementById(element))
         }
 
-        const observer = new MutationObserver(mutations => {
+        const observer = new MutationObserver(() => {
           if (document.getElementById(element)) {
             resolve(document.getElementById(element))
             observer.disconnect()
@@ -179,7 +154,7 @@
 
     /**
      * Wait for DOM Element
-     * @param element
+     * @param {String} counter
      * @return {Promise<HTMLElement>}
      */
     waitSegmentsCounter (counter) {
@@ -188,7 +163,7 @@
           return resolve(document.getElementById('segment-edit-general'))
         }
 
-        const observer = new MutationObserver(mutations => {
+        const observer = new MutationObserver(() => {
           if (document.querySelector('.feature-id-container > wz-overline').innerText.startsWith(counter)) {
             resolve(document.getElementById('segment-edit-general'))
             observer.disconnect()
