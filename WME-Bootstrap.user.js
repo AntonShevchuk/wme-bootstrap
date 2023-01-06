@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         WME Bootstrap
-// @version      0.1.0
+// @version      0.1.1
 // @description  Bootstrap library for custom Waze Map Editor scripts
 // @license      MIT License
 // @author       Anton Shevchuk
@@ -164,12 +164,14 @@
      */
     waitSegmentsCounter (counter) {
       return new Promise(resolve => {
-        if (document.querySelector('.feature-id-container > wz-overline').innerText.startsWith(counter)) {
+        if (document.querySelector('#edit-panel .panel-header-component wz-overline')
+          && document.querySelector('#edit-panel .panel-header-component wz-overline').innerText.startsWith(counter)) {
           return resolve(document.getElementById('segment-edit-general'))
         }
 
         const observer = new MutationObserver(() => {
-          if (document.querySelector('.feature-id-container > wz-overline').innerText.startsWith(counter)) {
+          if (document.querySelector('#edit-panel .panel-header-component wz-overline')
+            && document.querySelector('#edit-panel .panel-header-component wz-overline').innerText.startsWith(counter)) {
             resolve(document.getElementById('segment-edit-general'))
             observer.disconnect()
           }
