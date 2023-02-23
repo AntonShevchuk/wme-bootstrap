@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         WME Bootstrap
-// @version      0.1.1
+// @version      0.1.2
 // @description  Bootstrap library for custom Waze Map Editor scripts
 // @license      MIT License
 // @author       Anton Shevchuk
@@ -19,6 +19,13 @@
 (function () {
   'use strict'
 
+  const SELECTORS = {
+    node: 'div.connections-edit',
+    segment: '#segment-edit-general',
+    venue: '#venue-edit-general',
+    merge: '#mergeVenuesCollection'
+  }
+
   class Bootstrap {
     /**
      * Bootstrap it once!
@@ -30,7 +37,7 @@
       if (!pageWindow.WMEBootstrap) {
         pageWindow.WMEBootstrap = true
         document.addEventListener(
-          "wme-logged-in",
+          'wme-ready',
           () => this.init(),
           { once: true },
         );
@@ -66,8 +73,9 @@
      * Setup additional handler for `selectionchanged` event
      */
     setup () {
+      // register handler for selection
       W.selectionManager.events.register('selectionchanged', null, (event) => this.handler(event.selected))
-
+      // fire handler for current selection
       this.handler(W.selectionManager.getSelectedFeatures())
     }
 
@@ -87,13 +95,13 @@
 
       switch (true) {
         case (model.type === 'node' && isSingle):
-          this.trigger('node.wme', 'node-edit-general', model)
+          this.trigger('node.wme', SELECTORS.node, model)
           break
         case (model.type === 'node'):
-          this.trigger('nodes.wme', 'node-edit-general', models)
+          this.trigger('nodes.wme', SELECTORS.node, models)
           break
         case (model.type === 'segment' && isSingle):
-          this.trigger('segment.wme', 'segment-edit-general', model)
+          this.trigger('segment.wme', SELECTORS.segment, model)
           break
         case (model.type === 'segment'):
           this
@@ -101,17 +109,17 @@
             .then(element => jQuery(document).trigger('segments.wme', [element, models]))
           break
         case (model.type === 'venue' && isSingle):
-          this.trigger('venue.wme', 'venue-edit-general', model)
+          this.trigger('venue.wme', SELECTORS.venue, model)
           if (model.isResidential()) {
-            this.trigger('residential.wme', 'venue-edit-general', model)
+            this.trigger('residential.wme', SELECTORS.venue, model)
           } else if (model.isPoint()) {
-            this.trigger('point.wme', 'venue-edit-general', model)
+            this.trigger('point.wme', SELECTORS.venue, model)
           } else {
-            this.trigger('place.wme', 'venue-edit-general', model)
+            this.trigger('place.wme', SELECTORS.venue, model)
           }
           break
         case (model.type === 'venue'):
-          this.trigger('venues.wme', 'mergeVenuesCollection', models)
+          this.trigger('venues.wme', SELECTORS.merge, models)
           break
       }
     }
@@ -128,24 +136,25 @@
      */
     trigger (event, selector, models) {
       this
-        .waitElementById(selector)
-        .then(element => jQuery(document).trigger(event, [element, models]))
+        .waitElementBySelector(selector)
+        .then(element => jQuery(document)
+        .trigger(event, [element, models]))
     }
 
     /**
      * Wait for DOM Element
-     * @param element
+     * @param {string} selector
      * @return {Promise<HTMLElement>}
      */
-    waitElementById (element) {
+    waitElementBySelector (selector) {
       return new Promise(resolve => {
-        if (document.getElementById(element)) {
-          return resolve(document.getElementById(element))
+        if (document.querySelector(selector)) {
+          return resolve(document.querySelector(selector))
         }
 
         const observer = new MutationObserver(() => {
-          if (document.getElementById(element)) {
-            resolve(document.getElementById(element))
+          if (document.querySelector(selector)) {
+            resolve(document.querySelector(selector))
             observer.disconnect()
           }
         })
@@ -159,20 +168,19 @@
 
     /**
      * Wait for DOM Element
-     * @param {String} counter
+     * @param counter
      * @return {Promise<HTMLElement>}
      */
     waitSegmentsCounter (counter) {
+      let counterSelector = '#edit-panel .panel-header-component div:nth-child(2)'
       return new Promise(resolve => {
-        if (document.querySelector('#edit-panel .panel-header-component wz-overline')
-          && document.querySelector('#edit-panel .panel-header-component wz-overline').innerText.startsWith(counter)) {
-          return resolve(document.getElementById('segment-edit-general'))
+        if (document.querySelector(counterSelector)?.firstChild?.innerText.startsWith(counter)) {
+          return resolve(document.querySelector(SELECTORS.segment))
         }
 
         const observer = new MutationObserver(() => {
-          if (document.querySelector('#edit-panel .panel-header-component wz-overline')
-            && document.querySelector('#edit-panel .panel-header-component wz-overline').innerText.startsWith(counter)) {
-            resolve(document.getElementById('segment-edit-general'))
+          if (document.querySelector(counterSelector)?.firstChild?.innerText.startsWith(counter)) {
+            resolve(document.querySelector(SELECTORS.segment))
             observer.disconnect()
           }
         })
@@ -189,7 +197,10 @@
      * @param {String} message
      */
     log (message) {
-      console.log('%cBootstrap:%c ' + message, 'color: #0DAD8D; font-weight: bold', 'color: dimgray; font-weight: normal')
+      console.log(
+        '%cBootstrap:%c ' + message,
+        'color: #0DAD8D; font-weight: bold', 'color: dimgray; font-weight: normal'
+      )
     }
   }
 
