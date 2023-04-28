@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         WME Bootstrap
-// @version      0.1.2
+// @version      0.1.3
 // @description  Bootstrap library for custom Waze Map Editor scripts
 // @license      MIT License
 // @author       Anton Shevchuk
@@ -90,7 +90,7 @@
       }
 
       let isSingle = (selected.length === 1)
-      let models = selected.map(x => x.model)
+      let models = selected.map(x => x.attributes.repositoryObject)
       let model = models[0]
 
       switch (true) {
