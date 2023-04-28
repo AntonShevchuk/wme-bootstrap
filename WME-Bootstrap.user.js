@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         WME Bootstrap
-// @version      0.1.3
+// @version      0.1.4
 // @description  Bootstrap library for custom Waze Map Editor scripts
 // @license      MIT License
 // @author       Anton Shevchuk
@@ -172,14 +172,20 @@
      * @return {Promise<HTMLElement>}
      */
     waitSegmentsCounter (counter) {
-      let counterSelector = '#edit-panel .panel-header-component div:nth-child(2)'
+      let counterSelector = '#edit-panel div.segment.sidebar-column > :first-child'
       return new Promise(resolve => {
-        if (document.querySelector(counterSelector)?.firstChild?.innerText.startsWith(counter)) {
+        if (
+          document.querySelector(counterSelector)?.headline?.startsWith(counter) // beta
+          || document.querySelector(counterSelector)?.innerText.startsWith(counter) // wme
+        ) {
           return resolve(document.querySelector(SELECTORS.segment))
         }
 
         const observer = new MutationObserver(() => {
-          if (document.querySelector(counterSelector)?.firstChild?.innerText.startsWith(counter)) {
+          if (
+            document.querySelector(counterSelector)?.headline?.startsWith(counter) // beta
+            || document.querySelector(counterSelector)?.innerText.startsWith(counter) // wme
+          ) {
             resolve(document.querySelector(SELECTORS.segment))
             observer.disconnect()
           }
