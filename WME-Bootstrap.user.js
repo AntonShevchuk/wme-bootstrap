@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         WME Bootstrap
-// @version      0.1.4
+// @version      0.1.5
 // @description  Bootstrap library for custom Waze Map Editor scripts
 // @license      MIT License
 // @author       Anton Shevchuk
@@ -74,23 +74,26 @@
      */
     setup () {
       // register handler for selection
-      W.selectionManager.events.register('selectionchanged', null, (event) => this.handler(event.selected))
+      W.selectionManager.events.register(
+        'selectionchanged',
+        null,
+        () => this.handler(W.selectionManager.getSelectedDataModelObjects())
+      )
       // fire handler for current selection
-      this.handler(W.selectionManager.getSelectedFeatures())
+      this.handler(W.selectionManager.getSelectedDataModelObjects())
     }
 
     /**
      * Proxy-handler
-     * @param {Array} selected
+     * @param {Array} models
      */
-    handler (selected) {
-      if (selected.length === 0) {
+    handler (models) {
+      if (models.length === 0) {
         jQuery(document).trigger('none.wme')
         return
       }
 
-      let isSingle = (selected.length === 1)
-      let models = selected.map(x => x.attributes.repositoryObject)
+      let isSingle = (models.length === 1)
       let model = models[0]
 
       switch (true) {
@@ -138,7 +141,7 @@
       this
         .waitElementBySelector(selector)
         .then(element => jQuery(document)
-        .trigger(event, [element, models]))
+          .trigger(event, [element, models]))
     }
 
     /**
