@@ -102,6 +102,7 @@ All following events are triggered on the `document`
 
 ## Links
 
-Author homepage: http://anton.shevchuk.name/  
+Author homepage: https://anton.shevchuk.name/  
+Author pet projects: https://hohli.com/  
 Script homepage: https://github.com/AntonShevchuk/wme-bootstrap  
 GreasyFork: https://greasyfork.org/en/scripts/450160-wme-bootstrap

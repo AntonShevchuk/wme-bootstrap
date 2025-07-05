@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         WME Bootstrap
-// @version      0.1.6
+// @version      0.2.0
 // @description  Bootstrap library for custom Waze Map Editor scripts
 // @license      MIT License
 // @author       Anton Shevchuk
@@ -96,17 +96,17 @@
       let isSingle = (models.length === 1)
       let model = models[0]
 
-      let has = `:has([subtitle="ID: ${model.getID()}"])`
+      let has = `#edit-panel:has([subtitle="ID: ${model.getID()}"]) `
 
       switch (true) {
         case (model.type === 'node' && isSingle):
-          this.trigger('node.wme', SELECTORS.node + has, model)
+          this.trigger('node.wme', has + SELECTORS.node, model)
           break
         case (model.type === 'node'):
           this.trigger('nodes.wme', SELECTORS.node, models)
           break
         case (model.type === 'segment' && isSingle):
-          this.trigger('segment.wme', SELECTORS.segment + has, model)
+          this.trigger('segment.wme', has + SELECTORS.segment, model)
           break
         case (model.type === 'segment'):
           this
@@ -114,13 +114,13 @@
             .then(element => jQuery(document).trigger('segments.wme', [element, models]))
           break
         case (model.type === 'venue' && isSingle):
-          this.trigger('venue.wme', SELECTORS.venue + has, model)
+          this.trigger('venue.wme', has + SELECTORS.venue, model)
           if (model.isResidential()) {
-            this.trigger('residential.wme', SELECTORS.venue + has, model)
+            this.trigger('residential.wme', has + SELECTORS.venue, model)
           } else if (model.isPoint()) {
-            this.trigger('point.wme', SELECTORS.venue + has, model)
+            this.trigger('point.wme', has + SELECTORS.venue, model)
           } else {
-            this.trigger('place.wme', SELECTORS.venue + has, model)
+            this.trigger('place.wme', has + SELECTORS.venue, model)
           }
           break
         case (model.type === 'venue'):
@@ -164,7 +164,7 @@
           }
         })
 
-        observer.observe(document.getElementById('edit-panel'), {
+        observer.observe(document.getElementById('sidebar'), {
           childList: true,
           subtree: true
         })
