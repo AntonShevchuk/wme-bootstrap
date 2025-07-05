@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         WME Bootstrap
-// @version      0.2.0
+// @version      0.2.1
 // @description  Bootstrap library for custom Waze Map Editor scripts
 // @license      MIT License
 // @author       Anton Shevchuk
@@ -55,11 +55,11 @@
         this.setup()
         // listen all events
         jQuery(document)
-          .on('segment.wme', () => this.log('🛣️ segment.wme'))
+          .on('segment.wme', (event, element, model) => this.log('🛣️ segment.wme: ' + model.getID()))
           .on('segments.wme', () => this.log('🛣️️ segments.wme'))
-          .on('node.wme', () => this.log('⭐️ node.wme'))
+          .on('node.wme', (event, element, model) => this.log('⭐️ node.wme: ' + model.getID()))
           .on('nodes.wme', () => this.log('⭐️ nodes.wme'))
-          .on('venue.wme', () => this.log('📍️ venue.wme'))
+          .on('venue.wme', (event, element, model) => this.log('📍️ venue.wme: ' + model.getID()))
           .on('venues.wme', () => this.log('🏬️ venues.wme'))
           .on('point.wme', () => this.log('️🏠 point.wme'))
           .on('place.wme', () => this.log('🏢️️ place.wme'))
