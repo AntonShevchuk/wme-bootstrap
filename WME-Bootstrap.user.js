@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         WME Bootstrap
-// @version      0.1.5
+// @version      0.1.6
 // @description  Bootstrap library for custom Waze Map Editor scripts
 // @license      MIT License
 // @author       Anton Shevchuk
@@ -96,15 +96,17 @@
       let isSingle = (models.length === 1)
       let model = models[0]
 
+      let has = `:has([subtitle="ID: ${model.getID()}"])`
+
       switch (true) {
         case (model.type === 'node' && isSingle):
-          this.trigger('node.wme', SELECTORS.node, model)
+          this.trigger('node.wme', SELECTORS.node + has, model)
           break
         case (model.type === 'node'):
           this.trigger('nodes.wme', SELECTORS.node, models)
           break
         case (model.type === 'segment' && isSingle):
-          this.trigger('segment.wme', SELECTORS.segment, model)
+          this.trigger('segment.wme', SELECTORS.segment + has, model)
           break
         case (model.type === 'segment'):
           this
@@ -112,13 +114,13 @@
             .then(element => jQuery(document).trigger('segments.wme', [element, models]))
           break
         case (model.type === 'venue' && isSingle):
-          this.trigger('venue.wme', SELECTORS.venue, model)
+          this.trigger('venue.wme', SELECTORS.venue + has, model)
           if (model.isResidential()) {
-            this.trigger('residential.wme', SELECTORS.venue, model)
+            this.trigger('residential.wme', SELECTORS.venue + has, model)
           } else if (model.isPoint()) {
-            this.trigger('point.wme', SELECTORS.venue, model)
+            this.trigger('point.wme', SELECTORS.venue + has, model)
           } else {
-            this.trigger('place.wme', SELECTORS.venue, model)
+            this.trigger('place.wme', SELECTORS.venue + has, model)
           }
           break
         case (model.type === 'venue'):
