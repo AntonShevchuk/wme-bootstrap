@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         WME Bootstrap
-// @version      0.2.1
+// @version      0.3.0
 // @description  Bootstrap library for custom Waze Map Editor scripts
 // @license      MIT License
 // @author       Anton Shevchuk
@@ -14,7 +14,8 @@
 // ==/UserScript==
 
 /* jshint esversion: 8 */
-/* global jQuery, W */
+/* global jQuery */
+/* global sdk */
 
 (function () {
   'use strict'
@@ -55,11 +56,11 @@
         this.setup()
         // listen all events
         jQuery(document)
-          .on('segment.wme', (event, element, model) => this.log('🛣️ segment.wme: ' + model.getID()))
+          .on('segment.wme', (event, element, model) => this.log('🛣️ segment.wme: ' + model.id))
           .on('segments.wme', () => this.log('🛣️️ segments.wme'))
-          .on('node.wme', (event, element, model) => this.log('⭐️ node.wme: ' + model.getID()))
+          .on('node.wme', (event, element, model) => this.log('⭐️ node.wme: ' + model.id))
           .on('nodes.wme', () => this.log('⭐️ nodes.wme'))
-          .on('venue.wme', (event, element, model) => this.log('📍️ venue.wme: ' + model.getID()))
+          .on('venue.wme', (event, element, model) => this.log('📍️ venue.wme: ' + model.id))
           .on('venues.wme', () => this.log('🏬️ venues.wme'))
           .on('point.wme', () => this.log('️🏠 point.wme'))
           .on('place.wme', () => this.log('🏢️️ place.wme'))
@@ -70,60 +71,86 @@
     }
 
     /**
-     * Setup additional handler for `selectionchanged` event
+     * Setup additional handler for `wme-selection-changed` event
      */
     setup () {
+      this.wmeSDK = getWmeSdk(
+        {
+          scriptId: "wme-bootstrap",
+          scriptName: "WME Bootstrap"
+        }
+      );
+
       // register handler for selection
-      W.selectionManager.events.register(
-        'selectionchanged',
-        null,
-        () => this.handler(W.selectionManager.getSelectedDataModelObjects())
-      )
+      this.wmeSDK.Events.on({
+        eventName: "wme-selection-changed",
+        eventHandler: () => this.handler(
+          this.wmeSDK.Editing.getSelection()
+        )
+      })
+
       // fire handler for current selection
-      this.handler(W.selectionManager.getSelectedDataModelObjects())
+      this.handler(
+        this.wmeSDK.Editing.getSelection()
+      )
     }
 
     /**
      * Proxy-handler
-     * @param {Array} models
+     * @param {Object} selection
      */
-    handler (models) {
-      if (models.length === 0) {
+    handler (selection) {
+      if (!selection || selection.ids.length === 0) {
         jQuery(document).trigger('none.wme')
         return
       }
 
+      let models
+
+      switch (selection.objectType) {
+        case 'node':
+          models = selection.ids.map((id) => this.wmeSDK.DataModel.Nodes.getById( { nodeId: id } ))
+          break;
+        case 'segment':
+          models = selection.ids.map((id) => this.wmeSDK.DataModel.Segments.getById( { segmentId: id } ))
+          break;
+        case 'venue':
+          models = selection.ids.map((id) => this.wmeSDK.DataModel.Venues.getById( { venueId: id } ))
+          break;
+      }
+
       let isSingle = (models.length === 1)
+
       let model = models[0]
 
-      let has = `#edit-panel:has([subtitle="ID: ${model.getID()}"]) `
+      let hasSelector = `#edit-panel:has([subtitle="ID: ${model.id}"]) `
 
       switch (true) {
-        case (model.type === 'node' && isSingle):
-          this.trigger('node.wme', has + SELECTORS.node, model)
+        case (selection.objectType === 'node' && isSingle):
+          this.trigger('node.wme', hasSelector + SELECTORS.node, model)
           break
-        case (model.type === 'node'):
+        case (selection.objectType === 'node'):
           this.trigger('nodes.wme', SELECTORS.node, models)
           break
-        case (model.type === 'segment' && isSingle):
-          this.trigger('segment.wme', has + SELECTORS.segment, model)
+        case (selection.objectType === 'segment' && isSingle):
+          this.trigger('segment.wme', hasSelector + SELECTORS.segment, model)
           break
-        case (model.type === 'segment'):
+        case (selection.objectType === 'segment'):
           this
             .waitSegmentsCounter(models.length)
             .then(element => jQuery(document).trigger('segments.wme', [element, models]))
           break
-        case (model.type === 'venue' && isSingle):
-          this.trigger('venue.wme', has + SELECTORS.venue, model)
-          if (model.isResidential()) {
-            this.trigger('residential.wme', has + SELECTORS.venue, model)
-          } else if (model.isPoint()) {
-            this.trigger('point.wme', has + SELECTORS.venue, model)
+        case (selection.objectType === 'venue' && isSingle):
+          this.trigger('venue.wme', hasSelector + SELECTORS.venue, model)
+          if (model.isResidential) {
+            this.trigger('residential.wme', hasSelector + SELECTORS.venue, model)
+          } else if (model.geometry.type === 'Point') {
+            this.trigger('point.wme', hasSelector + SELECTORS.venue, model)
           } else {
-            this.trigger('place.wme', has + SELECTORS.venue, model)
+            this.trigger('place.wme', hasSelector + SELECTORS.venue, model)
           }
           break
-        case (model.type === 'venue'):
+        case (selection.objectType === 'venue'):
           this.trigger('venues.wme', SELECTORS.merge, models)
           break
       }
@@ -143,7 +170,8 @@
       this
         .waitElementBySelector(selector)
         .then(element => jQuery(document)
-          .trigger(event, [element, models]))
+          .trigger(event, [element, models])
+        )
     }
 
     /**
