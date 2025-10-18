@@ -35,8 +35,8 @@
       const sandbox = typeof unsafeWindow !== 'undefined'
       const pageWindow = sandbox ? unsafeWindow : window
 
-      if (!pageWindow.WMEBootstrap) {
-        pageWindow.WMEBootstrap = true
+      if (!pageWindow.WMEBootstrapReady) {
+        pageWindow.WMEBootstrapReady = true
         document.addEventListener(
           'wme-ready',
           () => this.init(),
