@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         WME Bootstrap
-// @version      0.3.0
+// @version      0.3.1
 // @description  Bootstrap library for custom Waze Map Editor scripts
 // @license      MIT License
 // @author       Anton Shevchuk
@@ -137,7 +137,7 @@
           break
         case (selection.objectType === 'segment'):
           this
-            .waitSegmentsCounter(models.length)
+            .waitSegmentsPanel(models.length)
             .then(element => jQuery(document).trigger('segments.wme', [element, models]))
           break
         case (selection.objectType === 'venue' && isSingle):
@@ -151,7 +151,9 @@
           }
           break
         case (selection.objectType === 'venue'):
-          this.trigger('venues.wme', SELECTORS.merge, models)
+          this
+            .waitVenuesPanel(models.length)
+            .then(element => jQuery(document).trigger('venues.wme', [element, models]))
           break
       }
     }
@@ -201,10 +203,10 @@
 
     /**
      * Wait for DOM Element
-     * @param counter
+     * @param {Number} counter
      * @return {Promise<HTMLElement>}
      */
-    waitSegmentsCounter (counter) {
+    waitSegmentsPanel (counter) {
       let counterSelector = '#edit-panel div.segment.sidebar-column > :first-child'
       return new Promise(resolve => {
         if (
@@ -220,6 +222,35 @@
             || document.querySelector(counterSelector)?.innerText.startsWith(counter) // wme
           ) {
             resolve(document.querySelector(SELECTORS.segment))
+            observer.disconnect()
+          }
+        })
+
+        observer.observe(document.getElementById('edit-panel'), {
+          childList: true,
+          subtree: true
+        })
+      })
+    }
+
+    /**
+     * Wait for DOM Element
+     * @param {Number} counter
+     * @return {Promise<HTMLElement>}
+     */
+    waitVenuesPanel (counter) {
+
+      let hasSelector = `:has(.merge-venue-card:nth-of-type(${counter}))`
+        + `:not(:has(.merge-venue-card:nth-of-type(${counter+1})))`
+
+      return new Promise(resolve => {
+        if (document.querySelectorAll(SELECTORS.merge + hasSelector).length) {
+          return resolve(document.querySelector(SELECTORS.merge))
+        }
+
+        const observer = new MutationObserver(() => {
+          if (document.querySelectorAll(SELECTORS.merge + hasSelector).length) {
+            resolve(document.querySelector(SELECTORS.merge))
             observer.disconnect()
           }
         })
