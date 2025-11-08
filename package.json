@@ -1,5 +1,4 @@
 {
-  "version": "0.3.2",
   "name": "wme-bootstrap",
   "devDependencies": {
     "@types/jquery": "^3.5.33",
