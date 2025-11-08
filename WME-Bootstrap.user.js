@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         WME Bootstrap
-// @version      0.3.1
+// @version      0.3.2
 // @description  Bootstrap library for custom Waze Map Editor scripts
 // @license      MIT License
 // @author       Anton Shevchuk
@@ -187,17 +187,24 @@
           return resolve(document.querySelector(selector))
         }
 
-        const observer = new MutationObserver(() => {
+        setTimeout(() => {
           if (document.querySelector(selector)) {
-            resolve(document.querySelector(selector))
-            observer.disconnect()
+            return resolve(document.querySelector(selector))
           }
-        })
+          const observer = new MutationObserver(() => {
+            // console.log('Mutation observer for element')
+            if (document.querySelector(selector)) {
+              resolve(document.querySelector(selector))
+              observer.disconnect()
+              // console.log('Mutation observer for element disconnected')
+            }
+          })
 
-        observer.observe(document.getElementById('sidebar'), {
-          childList: true,
-          subtree: true
-        })
+          observer.observe(document.getElementById('edit-panel'), {
+            childList: true,
+            subtree: true
+          })
+        }, 100)
       })
     }
 
@@ -209,20 +216,16 @@
     waitSegmentsPanel (counter) {
       let counterSelector = '#edit-panel div.segment.sidebar-column > :first-child'
       return new Promise(resolve => {
-        if (
-          document.querySelector(counterSelector)?.headline?.startsWith(counter) // beta
-          || document.querySelector(counterSelector)?.innerText.startsWith(counter) // wme
-        ) {
+        if (document.querySelector(counterSelector)?.headline?.startsWith(counter)) {
           return resolve(document.querySelector(SELECTORS.segment))
         }
 
         const observer = new MutationObserver(() => {
-          if (
-            document.querySelector(counterSelector)?.headline?.startsWith(counter) // beta
-            || document.querySelector(counterSelector)?.innerText.startsWith(counter) // wme
-          ) {
+          // console.log('Mutation observer for segment')
+          if (document.querySelector(counterSelector)?.headline?.startsWith(counter)) {
             resolve(document.querySelector(SELECTORS.segment))
             observer.disconnect()
+            // console.log('Mutation observer for segment disconnected')
           }
         })
 
@@ -249,9 +252,11 @@
         }
 
         const observer = new MutationObserver(() => {
+          // console.log('Mutation observer for venues')
           if (document.querySelectorAll(SELECTORS.merge + hasSelector).length) {
             resolve(document.querySelector(SELECTORS.merge))
             observer.disconnect()
+            // console.log('Mutation observer for venues disconnected')
           }
         })
 
@@ -276,4 +281,4 @@
 
   new Bootstrap()
 
-})()
+})();

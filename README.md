@@ -52,8 +52,8 @@ All following events are triggered on the `document`
 
 * `event` – [`jQuery.Event`](https://api.jquery.com/category/events/event-object/)
 * `element` – [`HTMLElement`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement) of the sidebar panel 
-* `model` – `W.model`
-* `models` – array of `W.model`
+* `model` – depends on type it can be Node, Segment or Venue
+* `models` – array of models
 
 ## Usage
 
