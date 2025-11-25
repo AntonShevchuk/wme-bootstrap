@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         WME Bootstrap
-// @version      0.3.2
+// @version      0.4.0
 // @description  Bootstrap library for custom Waze Map Editor scripts
 // @license      MIT License
 // @author       Anton Shevchuk
@@ -57,11 +57,11 @@
         // listen all events
         jQuery(document)
           .on('segment.wme', (event, element, model) => this.log('🛣️ segment.wme: ' + model.id))
-          .on('segments.wme', () => this.log('🛣️️ segments.wme'))
+          .on('segments.wme', (event, element, models) => this.log('🛣️️ segments.wme: ' + models.length + ' elements'))
           .on('node.wme', (event, element, model) => this.log('⭐️ node.wme: ' + model.id))
-          .on('nodes.wme', () => this.log('⭐️ nodes.wme'))
+          .on('nodes.wme', (event, element, models) => this.log('⭐️ nodes.wme: ' + models.length + ' elements'))
           .on('venue.wme', (event, element, model) => this.log('📍️ venue.wme: ' + model.id))
-          .on('venues.wme', () => this.log('🏬️ venues.wme'))
+          .on('venues.wme', (event, element, models) => this.log('🏬️ venues.wme: ' + models.length + ' elements'))
           .on('point.wme', () => this.log('️🏠 point.wme'))
           .on('place.wme', () => this.log('🏢️️ place.wme'))
           .on('residential.wme', () => this.log('🪧 residential.wme'))
@@ -71,43 +71,42 @@
     }
 
     /**
-     * Setup additional handler for `wme-selection-changed` event
+     * Setup additional handler for `wme-feature-editor-opened` event
+     * https://www.waze.com/editor/sdk/interfaces/index.SDK.SdkEvents.html#wme-feature-editor-opened
      */
     setup () {
-      this.wmeSDK = getWmeSdk(
-        {
-          scriptId: "wme-bootstrap",
-          scriptName: "WME Bootstrap"
-        }
-      );
+      this.wmeSDK = getWmeSdk({
+        scriptId: "wme-bootstrap",
+        scriptName: "WME Bootstrap"
+      });
 
-      // register handler for selection
+      // register handler for feature
       this.wmeSDK.Events.on({
-        eventName: "wme-selection-changed",
-        eventHandler: () => this.handler(
-          this.wmeSDK.Editing.getSelection()
-        )
+        eventName: "wme-feature-editor-opened",
+        eventHandler: ({featureType}) => this.eventHandler(featureType)
       })
 
-      // fire handler for current selection
-      this.handler(
-        this.wmeSDK.Editing.getSelection()
-      )
+      // register handler for nothing
+      this.wmeSDK.Events.on({
+        eventName: "wme-selection-changed",
+        eventHandler: () => {
+          if (!this.wmeSDK.Editing.getSelection()) {
+            jQuery(document).trigger('none.wme')
+          }
+        }
+      })
     }
 
     /**
-     * Proxy-handler
-     * @param {Object} selection
+     * Handler for selected features
+     * @param {String} featureType one of "node" | "segment" | "venue"
+     * @return void
      */
-    handler (selection) {
-      if (!selection || selection.ids.length === 0) {
-        jQuery(document).trigger('none.wme')
-        return
-      }
-
+    eventHandler (featureType) {
       let models
+      let selection = this.wmeSDK.Editing.getSelection()
 
-      switch (selection.objectType) {
+      switch (featureType) {
         case 'node':
           models = selection.ids.map((id) => this.wmeSDK.DataModel.Nodes.getById( { nodeId: id } ))
           break;
@@ -123,148 +122,45 @@
 
       let model = models[0]
 
-      let hasSelector = `#edit-panel:has([subtitle="ID: ${model.id}"]) `
-
       switch (true) {
-        case (selection.objectType === 'node' && isSingle):
-          this.trigger('node.wme', hasSelector + SELECTORS.node, model)
+        case (featureType === 'node' && isSingle):
+          this.eventTrigger('node.wme', SELECTORS.node, model)
           break
-        case (selection.objectType === 'node'):
-          this.trigger('nodes.wme', SELECTORS.node, models)
+        case (featureType === 'node'):
+          this.eventTrigger('nodes.wme', SELECTORS.node, models)
           break
-        case (selection.objectType === 'segment' && isSingle):
-          this.trigger('segment.wme', hasSelector + SELECTORS.segment, model)
+        case (featureType === 'segment' && isSingle):
+          this.eventTrigger('segment.wme', SELECTORS.segment, model)
           break
-        case (selection.objectType === 'segment'):
-          this
-            .waitSegmentsPanel(models.length)
-            .then(element => jQuery(document).trigger('segments.wme', [element, models]))
+        case (featureType === 'segment'):
+          this.eventTrigger('segments.wme', SELECTORS.segment, models)
           break
-        case (selection.objectType === 'venue' && isSingle):
-          this.trigger('venue.wme', hasSelector + SELECTORS.venue, model)
+        case (featureType === 'venue' && isSingle):
+          this.eventTrigger('venue.wme', SELECTORS.venue, model)
           if (model.isResidential) {
-            this.trigger('residential.wme', hasSelector + SELECTORS.venue, model)
+            this.eventTrigger('residential.wme', SELECTORS.venue, model)
           } else if (model.geometry.type === 'Point') {
-            this.trigger('point.wme', hasSelector + SELECTORS.venue, model)
+            this.eventTrigger('point.wme', SELECTORS.venue, model)
           } else {
-            this.trigger('place.wme', hasSelector + SELECTORS.venue, model)
+            this.eventTrigger('place.wme', SELECTORS.venue, model)
           }
           break
-        case (selection.objectType === 'venue'):
-          this
-            .waitVenuesPanel(models.length)
-            .then(element => jQuery(document).trigger('venues.wme', [element, models]))
+        case (featureType === 'venue'):
+          this.eventTrigger('venues.wme', SELECTORS.venue, models)
           break
       }
     }
 
     /**
-     * Fire new event with context
-     * It can be #node-edit-general
-     *  or #segment-edit-general
-     *  or #venue-edit-general
-     *  or #mergeVenuesCollection
-     * @param {String} event
+     * Trigger the document event
+     *  - pass the DOM Element as argument
+     *  - pass the Model(s) as argument
+     * @param {String} eventType
      * @param {String} selector
-     * @param {Object|Array} models
+     * @param {Object|Object[]} models
      */
-    trigger (event, selector, models) {
-      this
-        .waitElementBySelector(selector)
-        .then(element => jQuery(document)
-          .trigger(event, [element, models])
-        )
-    }
-
-    /**
-     * Wait for DOM Element
-     * @param {string} selector
-     * @return {Promise<HTMLElement>}
-     */
-    waitElementBySelector (selector) {
-      return new Promise(resolve => {
-        if (document.querySelector(selector)) {
-          return resolve(document.querySelector(selector))
-        }
-
-        setTimeout(() => {
-          if (document.querySelector(selector)) {
-            return resolve(document.querySelector(selector))
-          }
-          const observer = new MutationObserver(() => {
-            // console.log('Mutation observer for element')
-            if (document.querySelector(selector)) {
-              resolve(document.querySelector(selector))
-              observer.disconnect()
-              // console.log('Mutation observer for element disconnected')
-            }
-          })
-
-          observer.observe(document.getElementById('edit-panel'), {
-            childList: true,
-            subtree: true
-          })
-        }, 100)
-      })
-    }
-
-    /**
-     * Wait for DOM Element
-     * @param {Number} counter
-     * @return {Promise<HTMLElement>}
-     */
-    waitSegmentsPanel (counter) {
-      let counterSelector = '#edit-panel div.segment.sidebar-column > :first-child'
-      return new Promise(resolve => {
-        if (document.querySelector(counterSelector)?.headline?.startsWith(counter)) {
-          return resolve(document.querySelector(SELECTORS.segment))
-        }
-
-        const observer = new MutationObserver(() => {
-          // console.log('Mutation observer for segment')
-          if (document.querySelector(counterSelector)?.headline?.startsWith(counter)) {
-            resolve(document.querySelector(SELECTORS.segment))
-            observer.disconnect()
-            // console.log('Mutation observer for segment disconnected')
-          }
-        })
-
-        observer.observe(document.getElementById('edit-panel'), {
-          childList: true,
-          subtree: true
-        })
-      })
-    }
-
-    /**
-     * Wait for DOM Element
-     * @param {Number} counter
-     * @return {Promise<HTMLElement>}
-     */
-    waitVenuesPanel (counter) {
-
-      let hasSelector = `:has(.merge-venue-card:nth-of-type(${counter}))`
-        + `:not(:has(.merge-venue-card:nth-of-type(${counter+1})))`
-
-      return new Promise(resolve => {
-        if (document.querySelectorAll(SELECTORS.merge + hasSelector).length) {
-          return resolve(document.querySelector(SELECTORS.merge))
-        }
-
-        const observer = new MutationObserver(() => {
-          // console.log('Mutation observer for venues')
-          if (document.querySelectorAll(SELECTORS.merge + hasSelector).length) {
-            resolve(document.querySelector(SELECTORS.merge))
-            observer.disconnect()
-            // console.log('Mutation observer for venues disconnected')
-          }
-        })
-
-        observer.observe(document.getElementById('edit-panel'), {
-          childList: true,
-          subtree: true
-        })
-      })
+    eventTrigger (eventType, selector, models) {
+      jQuery(document).trigger(eventType, [document.querySelector(selector), models])
     }
 
     /**
