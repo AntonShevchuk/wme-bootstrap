@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         WME Bootstrap
-// @version      0.4.0
+// @version      0.5.0
 // @description  Bootstrap library for custom Waze Map Editor scripts
 // @license      MIT License
 // @author       Anton Shevchuk
@@ -21,8 +21,13 @@
   'use strict'
 
   const SELECTORS = {
+    city: 'div.city-feature-editor',
+    comment: 'div.map-comment-feature-editor',
+    hazard: 'div.permanent-hazard-feature-editor',
     node: 'div.connections-edit',
+    restricted: 'div.restricted-driving-area',
     segment: '#segment-edit-general',
+    // suggestion: '',
     venue: '#venue-edit-general',
     merge: '#mergeVenuesCollection'
   }
@@ -56,15 +61,18 @@
         this.setup()
         // listen all events
         jQuery(document)
+          .on('camera.wme', (event, element, model) => this.log('📸 camera.wme: ' + model.id))
+          .on('city.wme', (event, element, model) => this.log('🏬 city.wme: ' + model.id))
+          .on('comment.wme', (event, element, model) => this.log('💬 comment.wme: ' + model.id))
           .on('segment.wme', (event, element, model) => this.log('🛣️ segment.wme: ' + model.id))
           .on('segments.wme', (event, element, models) => this.log('🛣️️ segments.wme: ' + models.length + ' elements'))
           .on('node.wme', (event, element, model) => this.log('⭐️ node.wme: ' + model.id))
-          .on('nodes.wme', (event, element, models) => this.log('⭐️ nodes.wme: ' + models.length + ' elements'))
-          .on('venue.wme', (event, element, model) => this.log('📍️ venue.wme: ' + model.id))
-          .on('venues.wme', (event, element, models) => this.log('🏬️ venues.wme: ' + models.length + ' elements'))
-          .on('point.wme', () => this.log('️🏠 point.wme'))
-          .on('place.wme', () => this.log('🏢️️ place.wme'))
-          .on('residential.wme', () => this.log('🪧 residential.wme'))
+          .on('nodes.wme', (event, element, models) => this.log('🌟 nodes.wme: ' + models.length + ' elements'))
+          .on('venue.wme', (event, element, model) => this.log('🏠 venue.wme: ' + model.id))
+          .on('venues.wme', (event, element, models) => this.log('🏘️ venues.wme: ' + models.length + ' elements'))
+          .on('point.wme', () => this.log('️📍 point.wme'))
+          .on('place.wme', () => this.log('📌 place.wme'))
+          .on('residential.wme', () => this.log('🏡 residential.wme'))
       } catch (e) {
         console.error(e)
       }
@@ -99,7 +107,16 @@
 
     /**
      * Handler for selected features
-     * @param {String} featureType one of "node" | "segment" | "venue"
+     *  - city
+     *  - mapComment
+     *  - node
+     *  - permanentHazard
+     *  - restrictedDrivingArea
+     *  - segment
+     *  - segmentSuggestion
+     *  - venue
+     *
+     * @param {String} featureType
      * @return void
      */
     eventHandler (featureType) {
@@ -107,6 +124,12 @@
       let selection = this.wmeSDK.Editing.getSelection()
 
       switch (featureType) {
+        case 'city':
+          models = selection.ids.map((id) => this.wmeSDK.DataModel.Cities.getById( { cityId: id } ))
+          break;
+        case 'mapComment':
+          models = selection.ids.map((id) => this.wmeSDK.DataModel.MapComments.getById( { mapCommentId: id } ))
+          break;
         case 'node':
           models = selection.ids.map((id) => this.wmeSDK.DataModel.Nodes.getById( { nodeId: id } ))
           break;
@@ -116,6 +139,22 @@
         case 'venue':
           models = selection.ids.map((id) => this.wmeSDK.DataModel.Venues.getById( { venueId: id } ))
           break;
+        case 'permanentHazard':
+          // @todo: just wait for new version of the WME SDK to receive another types of hazards
+          models = selection.ids.map((id) => this.wmeSDK.DataModel.PermanentHazards.getCameraById( { cameraId: id } ))
+          break;
+        case 'permanentHazard':
+          models = selection.ids.map((id) => this.wmeSDK.DataModel.RestrictedDrivingAreas.getById( { restrictedDrivingAreaId: id } ))
+          break;
+        case 'segmentSuggestion':
+          // models = selection.ids.map((id) => this.wmeSDK.DataModel.EditSuggestions.getById( { editSuggestionId: id } ))
+          // break;
+        default:
+          return
+      }
+
+      if (!models.length) {
+        return
       }
 
       let isSingle = (models.length === 1)
@@ -123,17 +162,32 @@
       let model = models[0]
 
       switch (true) {
+        case (featureType === 'city'):
+          this.eventTrigger('city.wme', SELECTORS.city, model)
+          break
+        case (featureType === 'mapComment'):
+          this.eventTrigger('comment.wme', SELECTORS.comment, model)
+          break
         case (featureType === 'node' && isSingle):
           this.eventTrigger('node.wme', SELECTORS.node, model)
           break
         case (featureType === 'node'):
           this.eventTrigger('nodes.wme', SELECTORS.node, models)
           break
+        case (featureType === 'permanentHazard'):
+          this.eventTrigger('camera.wme', SELECTORS.hazard, model)
+          break
+        case (featureType === 'restrictedDrivingArea'):
+          this.eventTrigger('restricted.wme', SELECTORS.restricted, models)
+          break
         case (featureType === 'segment' && isSingle):
           this.eventTrigger('segment.wme', SELECTORS.segment, model)
           break
         case (featureType === 'segment'):
           this.eventTrigger('segments.wme', SELECTORS.segment, models)
+          break
+        case (featureType === 'segmentSuggestion'):
+          this.eventTrigger('suggestion.wme', SELECTORS.suggestion, models)
           break
         case (featureType === 'venue' && isSingle):
           this.eventTrigger('venue.wme', SELECTORS.venue, model)
@@ -153,8 +207,8 @@
 
     /**
      * Trigger the document event
-     *  - pass the DOM Element as argument
-     *  - pass the Model(s) as argument
+     *  - pass the DOM Element as an argument
+     *  - pass the Model(s) as an argument
      * @param {String} eventType
      * @param {String} selector
      * @param {Object|Object[]} models
