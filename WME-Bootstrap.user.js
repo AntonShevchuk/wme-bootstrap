@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         WME Bootstrap
-// @version      0.5.0
+// @version      0.5.1
 // @description  Bootstrap library for custom Waze Map Editor scripts
 // @license      MIT License
 // @author       Anton Shevchuk
@@ -25,6 +25,7 @@
     comment: 'div.map-comment-feature-editor',
     hazard: 'div.permanent-hazard-feature-editor',
     node: 'div.connections-edit',
+    junction: '#big-junction-edit-general',
     restricted: 'div.restricted-driving-area',
     segment: '#segment-edit-general',
     // suggestion: '',
@@ -61,6 +62,7 @@
         this.setup()
         // listen all events
         jQuery(document)
+          .on('junction.wme', (event, element, model) => this.log('🔀 junction.wme: ' + model.id))
           .on('camera.wme', (event, element, model) => this.log('📸 camera.wme: ' + model.id))
           .on('city.wme', (event, element, model) => this.log('🏬 city.wme: ' + model.id))
           .on('comment.wme', (event, element, model) => this.log('💬 comment.wme: ' + model.id))
@@ -130,6 +132,9 @@
         case 'mapComment':
           models = selection.ids.map((id) => this.wmeSDK.DataModel.MapComments.getById( { mapCommentId: id } ))
           break;
+        case 'bigJunction':
+          models = selection.ids.map((id) => this.wmeSDK.DataModel.BigJunctions.getById( { bigJunctionId: id } ))
+          break;
         case 'node':
           models = selection.ids.map((id) => this.wmeSDK.DataModel.Nodes.getById( { nodeId: id } ))
           break;
@@ -143,7 +148,7 @@
           // @todo: just wait for new version of the WME SDK to receive another types of hazards
           models = selection.ids.map((id) => this.wmeSDK.DataModel.PermanentHazards.getCameraById( { cameraId: id } ))
           break;
-        case 'permanentHazard':
+        case 'restrictedDrivingArea':
           models = selection.ids.map((id) => this.wmeSDK.DataModel.RestrictedDrivingAreas.getById( { restrictedDrivingAreaId: id } ))
           break;
         case 'segmentSuggestion':
@@ -167,6 +172,9 @@
           break
         case (featureType === 'mapComment'):
           this.eventTrigger('comment.wme', SELECTORS.comment, model)
+          break
+        case (featureType === 'bigJunction'):
+          this.eventTrigger('junction.wme', SELECTORS.junction, model)
           break
         case (featureType === 'node' && isSingle):
           this.eventTrigger('node.wme', SELECTORS.node, model)
