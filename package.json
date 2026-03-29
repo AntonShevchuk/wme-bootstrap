@@ -1,6 +1,6 @@
 {
   "name": "wme-bootstrap",
-  "version": "0.5.2",
+  "version": "0.6.0",
   "scripts": {
     "build": "rollup -c",
     "watch": "rollup -c --watch",
