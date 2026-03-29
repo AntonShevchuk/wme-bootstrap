@@ -26,6 +26,24 @@ So I think it's clear.
 
 So, it is not all. This script trigger [more events](#events) for common events in the WME where you can manipulate the [arguments](#arguments).
 
+## Development
+
+```bash
+npm install
+npm run build       # one-off build → dist/WME-Bootstrap.user.js
+npm run watch       # rebuild on changes
+```
+
+Source is written in TypeScript under `src/`, built with Rollup into a single IIFE at `dist/WME-Bootstrap.user.js`.
+
+```
+src/
+├── meta.ts          # userscript header
+├── globals.d.ts     # getWmeSdk declaration
+├── bootstrap.ts     # SELECTORS + Bootstrap class
+└── index.ts         # entry point
+```
+
 ## Require Script
 
 ```javascript
