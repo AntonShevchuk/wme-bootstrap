@@ -24,7 +24,7 @@ So I think it's clear.
 
 **Need more?**
 
-So, it is not all. This script trigger [more events](#events) for common events in the WME where you can manipulate the [arguments](#arguments).
+So, it is not all. This script triggers [more events](#events) for common events in the WME where you can manipulate the [arguments](#arguments).
 
 ## Development
 
@@ -70,7 +70,7 @@ All following events are triggered on the `document`
 
 * `event` – [`jQuery.Event`](https://api.jquery.com/category/events/event-object/)
 * `element` – [`HTMLElement`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement) of the sidebar panel 
-* `model` – depends on type it can be Node, Segment or Venue
+* `model` – depends on type it can be a Node, Segment or Venue
 * `models` – array of models
 
 ## Usage
