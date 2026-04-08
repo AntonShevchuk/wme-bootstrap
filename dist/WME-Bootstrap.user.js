@@ -91,13 +91,8 @@
             this.wmeSDK.Events.on({
                 eventName: 'wme-selection-changed',
                 eventHandler: () => {
-                    try {
-                        if (!this.wmeSDK.Editing.getSelection()) {
-                            jQuery(document).trigger('none.wme');
-                        }
-                    }
-                    catch (e) {
-                        // unsupported selection types (e.g. googlePlace) throw WMEError
+                    if (!this.wmeSDK.Editing.getSelection()) {
+                        jQuery(document).trigger('none.wme');
                     }
                 },
             });
